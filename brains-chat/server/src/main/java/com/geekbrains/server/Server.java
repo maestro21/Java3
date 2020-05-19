@@ -8,14 +8,20 @@ import java.util.Vector;
 public class Server {
     private Vector<ClientHandler> clients;
     private AuthService authService;
+    private DB db;
+
+    public DB getDb() {
+        return db;
+    }
 
     public AuthService getAuthService() {
         return authService;
     }
 
     public Server() {
+        db = new DB();
         clients = new Vector<>();
-        authService = new SimpleAuthService();
+        authService = new SimpleAuthService(this);
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
             System.out.println("Сервер запущен на порту 8189");
             while (true) {
@@ -34,6 +40,18 @@ public class Server {
             o.sendMsg(msg);
         }
     }
+
+    public void changeNickname(ClientHandler sender, String newNickname) {
+        String oldNickname = sender.getNickname();
+        if (db.changeNickname(oldNickname, newNickname)) {
+            broadcastMsg(oldNickname + " теперь известен как " + newNickname);
+            sender.setNickname(newNickname);
+            broadcastClientsList();
+        } else {
+            sender.sendMsg("Ник " + newNickname + " уже занет");
+        }
+    }
+
 
     public void privateMsg(ClientHandler sender, String receiverNick, String msg) {
         if (sender.getNickname().equals(receiverNick)) {

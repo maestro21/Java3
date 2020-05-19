@@ -16,22 +16,14 @@ public class SimpleAuthService implements AuthService {
         }
     }
 
-    private List<UserData> users;
+    private Server server;
 
-    public SimpleAuthService() {
-        this.users = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            users.add(new UserData("login" + i, "pass" + i, "nick" + i));
-        }
+    public SimpleAuthService(Server server) {
+        this.server = server;
     }
 
     @Override
     public String getNicknameByLoginAndPassword(String login, String password) {
-        for (UserData o : users) {
-            if (o.login.equals(login) && o.password.equals(password)) {
-                return o.nickname;
-            }
-        }
-        return null;
+        return server.getDb().authUser(login,password);
     }
 }

@@ -16,6 +16,10 @@ public class ClientHandler {
         return nickname;
     }
 
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     public ClientHandler(Server server, Socket socket) {
         try {
             this.server = server;
@@ -48,6 +52,10 @@ public class ClientHandler {
                             if(msg.startsWith("/w ")) {
                                 String[] tokens = msg.split("\\s", 3);
                                 server.privateMsg(this, tokens[1], tokens[2]);
+                            }
+                            if(msg.startsWith("/name ")) {
+                                String[] tokens = msg.split("\\s", 2);
+                                server.changeNickname(this, tokens[1]);
                             }
                         } else {
                             server.broadcastMsg(nickname + ": " + msg);
