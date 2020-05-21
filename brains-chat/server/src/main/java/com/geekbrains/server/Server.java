@@ -37,7 +37,7 @@ public class Server {
 
     public void broadcastMsg(String msg) {
         for (ClientHandler o : clients) {
-            o.sendMsg(msg);
+            o.sendMsg(msg, true);
         }
     }
 
@@ -48,24 +48,24 @@ public class Server {
             sender.setNickname(newNickname);
             broadcastClientsList();
         } else {
-            sender.sendMsg("Ник " + newNickname + " уже занет");
+            sender.sendMsg("Ник " + newNickname + " уже занет", true);
         }
     }
 
 
     public void privateMsg(ClientHandler sender, String receiverNick, String msg) {
         if (sender.getNickname().equals(receiverNick)) {
-            sender.sendMsg("заметка для себя: " + msg);
+            sender.sendMsg("заметка для себя: " + msg, true);
             return;
         }
         for (ClientHandler o : clients) {
             if (o.getNickname().equals(receiverNick)) {
-                o.sendMsg("от " + sender.getNickname() + ": " + msg);
-                sender.sendMsg("для " + receiverNick + ": " + msg);
+                o.sendMsg("от " + sender.getNickname() + ": " + msg, true);
+                sender.sendMsg("для " + receiverNick + ": " + msg, true);
                 return;
             }
         }
-        sender.sendMsg("Клиент " + receiverNick + " не найден");
+        sender.sendMsg("Клиент " + receiverNick + " не найден", true);
     }
 
     public void subscribe(ClientHandler clientHandler) {

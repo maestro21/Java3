@@ -4,13 +4,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientHandler {
+    private String login;
     private String nickname;
     private Server server;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
+    private IO io;
 
     public String getNickname() {
         return nickname;
@@ -35,8 +38,11 @@ public class ClientHandler {
                             String[] tokens = msg.split("\\s");
                             String nick = server.getAuthService().getNicknameByLoginAndPassword(tokens[1], tokens[2]);
                             if (nick != null && !server.isNickBusy(nick)) {
+                                login = tokens[1];
+                                io = new IO(login);
                                 sendMsg("/authok " + nick);
                                 nickname = nick;
+                                printLastMessages();
                                 server.subscribe(this);
                                 break;
                             }
@@ -72,9 +78,23 @@ public class ClientHandler {
         }
     }
 
+    public void printLastMessages() {
+        ArrayList<String> msgs = io.readLastMessages();
+        for (String msg: msgs) {
+            sendMsg(msg);
+        }
+    }
+
     public void sendMsg(String msg) {
+        sendMsg(msg, false);
+    }
+
+    public void sendMsg(String msg, boolean log) {
         try {
             out.writeUTF(msg);
+            if(log) {
+                io.log(msg);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
