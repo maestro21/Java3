@@ -24,7 +24,7 @@ public class ClientHandler implements Runnable {
     }
 
     public ClientHandler(Server server, Socket socket) {
-        try{
+        try {
             this.server = server;
             this.socket = socket;
             this.in = new DataInputStream(socket.getInputStream());
