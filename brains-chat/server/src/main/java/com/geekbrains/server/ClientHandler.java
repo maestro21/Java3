@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class ClientHandler {
+public class ClientHandler implements Runnable {
     private String login;
     private String nickname;
     private Server server;
@@ -29,52 +29,53 @@ public class ClientHandler {
             this.socket = socket;
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
-            new Thread(() -> {
-                try {
-                    while (true) {
-                        String msg = in.readUTF();
-                        // /auth login1 pass1
-                        if (msg.startsWith("/auth ")) {
-                            String[] tokens = msg.split("\\s");
-                            String nick = server.getAuthService().getNicknameByLoginAndPassword(tokens[1], tokens[2]);
-                            if (nick != null && !server.isNickBusy(nick)) {
-                                login = tokens[1];
-                                io = new IO(login);
-                                sendMsg("/authok " + nick);
-                                nickname = nick;
-                                printLastMessages();
-                                server.subscribe(this);
-                                break;
-                            }
-                        }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void run() {
+        try {
+            while (true) {
+                String msg = in.readUTF();
+                // /auth login1 pass1
+                if (msg.startsWith("/auth ")) {
+                    String[] tokens = msg.split("\\s");
+                    String nick = server.getAuthService().getNicknameByLoginAndPassword(tokens[1], tokens[2]);
+                    if (nick != null && !server.isNickBusy(nick)) {
+                        login = tokens[1];
+                        io = new IO(login);
+                        sendMsg("/authok " + nick);
+                        nickname = nick;
+                        printLastMessages();
+                        server.subscribe(this);
+                        break;
                     }
-                    while (true) {
-                        String msg = in.readUTF();
-                        if(msg.startsWith("/")) {
-                            if (msg.equals("/end")) {
-                                sendMsg("/end");
-                                break;
-                            }
-                            if(msg.startsWith("/w ")) {
-                                String[] tokens = msg.split("\\s", 3);
-                                server.privateMsg(this, tokens[1], tokens[2]);
-                            }
-                            if(msg.startsWith("/name ")) {
-                                String[] tokens = msg.split("\\s", 2);
-                                server.changeNickname(this, tokens[1]);
-                            }
-                        } else {
-                            server.broadcastMsg(nickname + ": " + msg);
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    ClientHandler.this.disconnect();
                 }
-            }).start();
+            }
+            while (true) {
+                String msg = in.readUTF();
+                if(msg.startsWith("/")) {
+                    if (msg.equals("/end")) {
+                        sendMsg("/end");
+                        break;
+                    }
+                    if(msg.startsWith("/w ")) {
+                        String[] tokens = msg.split("\\s", 3);
+                        server.privateMsg(this, tokens[1], tokens[2]);
+                    }
+                    if(msg.startsWith("/name ")) {
+                        String[] tokens = msg.split("\\s", 2);
+                        server.changeNickname(this, tokens[1]);
+                    }
+                } else {
+                    server.broadcastMsg(nickname + ": " + msg);
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            ClientHandler.this.disconnect();
         }
     }
 
