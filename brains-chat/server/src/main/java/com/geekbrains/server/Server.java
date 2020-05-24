@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private Vector<ClientHandler> clients;
@@ -17,6 +19,7 @@ public class Server {
     public AuthService getAuthService() {
         return authService;
     }
+    private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     public Server() {
         db = new DB();
@@ -28,10 +31,12 @@ public class Server {
                 Socket socket = serverSocket.accept();
                 new ClientHandler(this, socket);
                 System.out.println("Подключился новый клиент");
+                executorService.submit(new ClientHandler(this, socket), "Подключился новый клиент");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        executorService.shutdown();
         System.out.println("Сервер завершил свою работу");
     }
 
