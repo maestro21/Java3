@@ -4,6 +4,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class Car implements Runnable {
     private static int CARS_COUNT;
+    private static volatile int place = 0;
     static {
         CARS_COUNT = 0;
     }
@@ -33,9 +34,15 @@ public class Car implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println(this.name + " выехал");
         for (int i = 0; i < race.getStages().size(); i++) {
             race.getStages().get(i).go(this);
         }
         cdl.countDown();
+        place++;
+        System.out.println(this.name + " приехал к финишу " + place + "м");
+        if(place == 1) {
+            System.out.println(this.name + " ПОБЕДИТЕЛЬ! УРА!");
+        }
     }
 }
