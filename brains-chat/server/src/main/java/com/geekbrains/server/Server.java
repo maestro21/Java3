@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Server {
     private Vector<ClientHandler> clients;
@@ -15,6 +17,10 @@ public class Server {
     public DB getDb() {
         return db;
     }
+
+    private  final Logger log = LogManager.getLogger(Server.class);
+
+
 
     public AuthService getAuthService() {
         return authService;
@@ -26,18 +32,19 @@ public class Server {
         clients = new Vector<>();
         authService = new SimpleAuthService(this);
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
-            System.out.println("Сервер запущен на порту 8189");
+            log.info("Сервер запущен на порту 8189");
             while (true) {
                 Socket socket = serverSocket.accept();
                 new ClientHandler(this, socket);
-                System.out.println("Подключился новый клиент");
+                log.info("Подключился новый клиент");
                 executorService.submit(new ClientHandler(this, socket), "Подключился новый клиент");
             }
         } catch (IOException e) {
             e.printStackTrace();
+            log.error("Ошибка на сервере: " + e.getMessage());
         }
         executorService.shutdown();
-        System.out.println("Сервер завершил свою работу");
+        log.info("Сервер завершил свою работу");
     }
 
     public void broadcastMsg(String msg) {
@@ -49,11 +56,12 @@ public class Server {
     public void changeNickname(ClientHandler sender, String newNickname) {
         String oldNickname = sender.getNickname();
         if (db.changeNickname(oldNickname, newNickname)) {
+            log.info(oldNickname + " сменил ник на " + newNickname);
             broadcastMsg(oldNickname + " теперь известен как " + newNickname);
             sender.setNickname(newNickname);
             broadcastClientsList();
         } else {
-            sender.sendMsg("Ник " + newNickname + " уже занет", true);
+            sender.sendMsg("Ник " + newNickname + " уже занят", true);
         }
     }
 
