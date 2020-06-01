@@ -19,4 +19,21 @@ public class Calculator {
 
         return Arrays.copyOfRange(arr,pos + 1,arr.length);
     }
+
+
+
+    public boolean checkOneAndFour(int[] arr) {
+        boolean one = false;
+        boolean four = false;
+
+        for(int i = 0; i < arr.length; i++) {
+            switch(arr[i]) {
+                case 1: one = true; break;
+                case 4: four = true; break;
+                default: return false;
+            }
+        }
+
+        return one && four;
+    }
 }

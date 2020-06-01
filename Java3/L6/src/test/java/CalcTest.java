@@ -39,4 +39,32 @@ public class CalcTest {
     }
 
 
+    @Test
+    public void checkOneAndFour_correct() {
+        calculator = new Calculator();
+        int[] src = { 1, 1, 1, 4, 4, 1, 4, 4};
+        Assertions.assertTrue(calculator.checkOneAndFour(src));
+    }
+
+    @Test
+    public void checkOneAndFour_justOne() {
+        calculator = new Calculator();
+        int[] src = { 1, 1, 1, 1, 1, 1};
+        Assertions.assertFalse(calculator.checkOneAndFour(src));
+    }
+
+    @Test
+    public void checkOneAndFour_justFour() {
+        calculator = new Calculator();
+        int[] src = { 4,4,4,4};
+        Assertions.assertFalse(calculator.checkOneAndFour(src));
+    }
+
+    @Test
+    public void checkOneAndFour_none() {
+        calculator = new Calculator();
+        int[] src = {   1, 4, 4, 1, 1, 4, 3};
+        Assertions.assertFalse(calculator.checkOneAndFour(src));
+    }
+
 }
